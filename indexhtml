@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebMaster Editor - Live Preview</title>
+    <title> PROFESSOER - Live Preview</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -363,7 +363,7 @@
         <header>
             <div class="logo">
                 <i class="fas fa-code"></i>
-                <span>WebMaster Editor</span>
+                <span>PROFESSOR WEB TRIAL</span>
             </div>
             <div class="code-stats">
                 <div class="stat">
@@ -494,7 +494,7 @@
         </div>
         
         <footer>
-            <p>WebMaster Editor &copy; 2023 | Create amazing web pages with live preview</p>
+            <p>MADE BY PROFESSOR &copy; 2025 | Create amazing web pages with live preview</p>
         </footer>
     </div>
 
