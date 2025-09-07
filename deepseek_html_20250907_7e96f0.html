@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebMaster Editor - Live Preview</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --accent: #f72585;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4cc9f0;
+            --warning: #f9c74f;
+            --danger: #f94144;
+            --sidebar-width: 280px;
+            --header-height: 70px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--light);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: white;
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        
+        .logo {
+            font-weight: bold;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .logo i {
+            margin-right: 15px;
+            color: var(--accent);
+            font-size: 2.2rem;
+        }
+        
+        .main-content {
+            display: flex;
+            flex: 1;
+            gap: 20px;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        
+        .editor-container {
+            display: flex;
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        
+        .editor-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .preview-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+        
+        .panel-header {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .panel-header h3 {
+            font-weight: 600;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .panel-content {
+            flex: 1;
+            overflow: auto;
+            padding: 0;
+            position: relative;
+        }
+        
+        #code-editor {
+            width: 100%;
+            height: 100%;
+            border: none;
+            padding: 20px;
+            font-family: 'Fira Code', monospace;
+            font-size: 15px;
+            resize: none;
+            outline: none;
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+            line-height: 1.6;
+        }
+        
+        #live-preview {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+            color: black;
+            padding: 20px;
+            overflow: auto;
+        }
+        
+        .toolbar {
+            display: flex;
+            gap: 15px;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn i {
+            font-size: 16px;
+        }
+        
+        .btn-run {
+            background: var(--success);
+        }
+        
+        .btn-save {
+            background: var(--accent);
+        }
+        
+        .btn-clear {
+            background: var(--danger);
+        }
+        
+        .options-sidebar {
+            width: var(--sidebar-width);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        
+        .option-section {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+        }
+        
+        .option-section h3 {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        
+        .option-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .option-card:hover {
+            background: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .option-card i {
+            font-size: 20px;
+        }
+        
+        .theme-options {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .theme {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .theme:hover {
+            transform: scale(1.1);
+        }
+        
+        .theme-active {
+            border: 2px solid white;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .theme-default { background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%); }
+        .theme-dark { background: linear-gradient(135deg, #212529 0%, #343a40 100%); }
+        .theme-light { background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); }
+        .theme-green { background: linear-gradient(135deg, #2b9348 0%, #007f5f 100%); }
+        .theme-sunset { background: linear-gradient(135deg, #ff6b6b 0%, #ff9e6b 100%); }
+        
+        .code-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9rem;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+        
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .options-sidebar {
+                width: 100%;
+                order: -1;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .editor-container {
+                flex-direction: column;
+            }
+            
+            .toolbar {
+                flex-wrap: wrap;
+            }
+            
+            .btn {
+                flex: 1;
+                justify-content: center;
+            }
+            
+            header {
+                padding: 0 20px;
+            }
+            
+            .logo {
+                font-size: 1.4rem;
+            }
+        }
+        
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-code"></i>
+                <span>WebMaster Editor</span>
+            </div>
+            <div class="code-stats">
+                <div class="stat">
+                    <i class="fas fa-font"></i>
+                    <span id="char-count">0 chars</span>
+                </div>
+                <div class="stat">
+                    <i class="fas fa-bars"></i>
+                    <span id="line-count">0 lines</span>
+                </div>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <div class="options-sidebar">
+                <div class="option-section">
+                    <h3><i class="fas fa-magic"></i> Formatting Options</h3>
+                    <div class="options-grid">
+                        <div class="option-card" data-option="bold">
+                            <i class="fas fa-bold"></i>
+                            <span>Bold</span>
+                        </div>
+                        <div class="option-card" data-option="italic">
+                            <i class="fas fa-italic"></i>
+                            <span>Italic</span>
+                        </div>
+                        <div class="option-card" data-option="heading">
+                            <i class="fas fa-heading"></i>
+                            <span>Heading</span>
+                        </div>
+                        <div class="option-card" data-option="link">
+                            <i class="fas fa-link"></i>
+                            <span>Link</span>
+                        </div>
+                        <div class="option-card" data-option="image">
+                            <i class="fas fa-image"></i>
+                            <span>Image</span>
+                        </div>
+                        <div class="option-card" data-option="code">
+                            <i class="fas fa-code"></i>
+                            <span>Code</span>
+                        </div>
+                        <div class="option-card" data-option="color">
+                            <i class="fas fa-palette"></i>
+                            <span>Color</span>
+                        </div>
+                        <div class="option-card" data-option="clear">
+                            <i class="fas fa-broom"></i>
+                            <span>Clear</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="option-section">
+                    <h3><i class="fas fa-paint-roller"></i> Color Themes</h3>
+                    <div class="theme-options">
+                        <div class="theme theme-default theme-active" data-theme="default"></div>
+                        <div class="theme theme-dark" data-theme="dark"></div>
+                        <div class="theme theme-light" data-theme="light"></div>
+                        <div class="theme theme-green" data-theme="green"></div>
+                        <div class="theme theme-sunset" data-theme="sunset"></div>
+                    </div>
+                </div>
+                
+                <div class="option-section">
+                    <h3><i class="fas fa-rocket"></i> Quick Templates</h3>
+                    <div class="options-grid">
+                        <div class="option-card" data-template="basic">
+                            <i class="fas fa-file"></i>
+                            <span>Basic HTML</span>
+                        </div>
+                        <div class="option-card" data-template="blog">
+                            <i class="fas fa-blog"></i>
+                            <span>Blog Layout</span>
+                        </div>
+                        <div class="option-card" data-template="card">
+                            <i class="fas fa-id-card"></i>
+                            <span>Card Layout</span>
+                        </div>
+                        <div class="option-card" data-template="form">
+                            <i class="fas fa-window-restore"></i>
+                            <span>Form Layout</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="editor-container">
+                <div class="editor-panel">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-pen"></i> HTML Editor</h3>
+                        <span>Edit your code here</span>
+                    </div>
+                    <div class="panel-content">
+                        <textarea id="code-editor" placeholder="Write your HTML here..."></textarea>
+                    </div>
+                    <div class="toolbar">
+                        <button class="btn btn-run" id="run-code">
+                            <i class="fas fa-play"></i> Run & Preview
+                        </button>
+                        <button class="btn btn-save" id="save-code">
+                            <i class="fas fa-save"></i> Save File
+                        </button>
+                        <button class="btn btn-clear" id="clear-code">
+                            <i class="fas fa-trash"></i> Clear Editor
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="preview-panel">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-eye"></i> Live Preview</h3>
+                        <span>See your changes in real-time</span>
+                    </div>
+                    <div class="panel-content">
+                        <div id="live-preview"></div>
+                    </div>
+                    <div class="toolbar">
+                        <button class="btn" id="refresh-preview">
+                            <i class="fas fa-sync"></i> Refresh
+                        </button>
+                        <button class="btn" id="fullscreen-preview">
+                            <i class="fas fa-expand"></i> Fullscreen
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>WebMaster Editor &copy; 2023 | Create amazing web pages with live preview</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const codeEditor = document.getElementById('code-editor');
+            const livePreview = document.getElementById('live-preview');
+            const runCodeBtn = document.getElementById('run-code');
+            const clearCodeBtn = document.getElementById('clear-code');
+            const refreshPreviewBtn = document.getElementById('refresh-preview');
+            const fullscreenPreviewBtn = document.getElementById('fullscreen-preview');
+            const saveCodeBtn = document.getElementById('save-code');
+            const charCount = document.getElementById('char-count');
+            const lineCount = document.getElementById('line-count');
+            const optionCards = document.querySelectorAll('.option-card');
+            const themeOptions = document.querySelectorAll('.theme');
+            
+            // Default HTML content
+            const defaultHTML = `<!DOCTYPE html>
+<html>
+<head>
+    <title>My Awesome Page</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #4361ee;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        p {
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin: 20px 0;
+        }
+        .btn {
+            background: #4361ee;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            background: #3a0ca3;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to WebMaster Editor</h1>
+        <p>This is a <strong>live preview</strong> of your HTML code. Start editing on the left to see your changes instantly!</p>
+        
+        <div class="card">
+            <h2>About This Editor</h2>
+            <p>WebMaster Editor provides a powerful environment to create and test your web pages with real-time preview.</p>
+            <p>You can use the options on the left to quickly format your content or apply beautiful themes.</p>
+            <button class="btn">Get Started</button>
+        </div>
+        
+        <p>Create something amazing today! 🚀</p>
+    </div>
+</body>
+</html>`;
+            
+            // Set default value
+            codeEditor.value = defaultHTML;
+            updatePreview();
+            updateStats();
+            
+            // Update code stats
+            codeEditor.addEventListener('input', function() {
+                updateStats();
+                updatePreview();
+            });
+            
+            // Run code button
+            runCodeBtn.addEventListener('click', updatePreview);
+            
+            // Clear code button
+            clearCodeBtn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to clear the editor? All your content will be lost.')) {
+                    codeEditor.value = '';
+                    updatePreview();
+                    updateStats();
+                }
+            });
+            
+            // Refresh preview button
+            refreshPreviewBtn.addEventListener('click', updatePreview);
+            
+            // Fullscreen preview button
+            fullscreenPreviewBtn.addEventListener('click', function() {
+                if (document.fullscreenElement) {
+                    document.exitFullscreen();
+                } else {
+                    livePreview.requestFullscreen().catch(err => {
+                        alert(`Error attempting to enable full-screen mode: ${err.message}`);
+                    });
+                }
+            });
+            
+            // Save code button
+            saveCodeBtn.addEventListener('click', function() {
+                const blob = new Blob([codeEditor.value], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'my-webpage.html';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                // Show saved notification
+                const originalText = saveCodeBtn.innerHTML;
+                saveCodeBtn.innerHTML = '<i class="fas fa-check"></i> Saved!';
+                setTimeout(() => {
+                    saveCodeBtn.innerHTML = originalText;
+                }, 2000);
+            });
+            
+            // Option cards functionality
+            optionCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const option = this.getAttribute('data-option');
+                    const template = this.getAttribute('data-template');
+                    
+                    if (option) {
+                        applyOption(option);
+                    } else if (template) {
+                        applyTemplate(template);
+                    }
+                });
+            });
+            
+            // Theme options
+            themeOptions.forEach(theme => {
+                theme.addEventListener('click', function() {
+                    const themeName = this.getAttribute('data-theme');
+                    
+                    // Remove active class from all themes
+                    themeOptions.forEach(t => t.classList.remove('theme-active'));
+                    
+                    // Add active class to clicked theme
+                    this.classList.add('theme-active');
+                    
+                    changeTheme(themeName);
+                });
+            });
+            
+            // Update preview function
+            function updatePreview() {
+                try {
+                    // Clear previous content
+                    livePreview.innerHTML = '';
+                    
+                    // Create a temporary container to parse the HTML
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = codeEditor.value;
+                    
+                    // Append to live preview
+                    livePreview.appendChild(tempDiv);
+                } catch (error) {
+                    console.error('Preview error:', error);
+                    livePreview.innerHTML = `
+                        <div style="color: red; padding: 20px;">
+                            <h3>Error Rendering Preview</h3>
+                            <p>There was an error rendering your HTML. Please check your code syntax.</p>
+                            <p>Error details: ${error.message}</p>
+                        </div>
+                    `;
+                }
+            }
+            
+            // Update stats function
+            function updateStats() {
+                const lines = codeEditor.value.split('\n').length;
+                const chars = codeEditor.value.length;
+                charCount.textContent = `${chars} chars`;
+                lineCount.textContent = `${lines} lines`;
+            }
+            
+            // Apply option function
+            function applyOption(option) {
+                const textarea = codeEditor;
+                const start = textarea.selectionStart;
+                const end = textarea.selectionEnd;
+                const selectedText = textarea.value.substring(start, end);
+                
+                let newText = '';
+                
+                switch(option) {
+                    case 'bold':
+                        newText = `<strong>${selectedText}</strong>`;
+                        break;
+                    case 'italic':
+                        newText = `<em>${selectedText}</em>`;
+                        break;
+                    case 'heading':
+                        newText = `<h2>${selectedText}</h2>`;
+                        break;
+                    case 'link':
+                        newText = `<a href="https://example.com" target="_blank">${selectedText}</a>`;
+                        break;
+                    case 'image':
+                        newText = `<img src="https://via.placeholder.com/400x200?text=Your+Image" alt="Placeholder Image" style="max-width: 100%; border-radius: 8px;">`;
+                        break;
+                    case 'code':
+                        newText = `<code>${selectedText}</code>`;
+                        break;
+                    case 'color':
+                        newText = `<span style="color: #4361ee; font-weight: bold;">${selectedText}</span>`;
+                        break;
+                    case 'clear':
+                        if (confirm('Are you sure you want to clear the editor?')) {
+                            textarea.value = '';
+                            updatePreview();
+                            updateStats();
+                        }
+                        return;
+                    default:
+                        return;
+                }
+                
+                textarea.value = textarea.value.substring(0, start) + newText + textarea.value.substring(end);
+                updatePreview();
+                updateStats();
+            }
+            
+            // Apply template function
+            function applyTemplate(template) {
+                let templateHTML = '';
+                
+                switch(template) {
+                    case 'basic':
+                        templateHTML = `<!DOCTYPE html>
+<html>
+<head>
+    <title>Basic Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to My Basic Page</h1>
+    <p>This is a simple HTML template to get you started.</p>
+</body>
+</html>`;
+                        break;
+                    case 'blog':
+                        templateHTML = `<!DOCTYPE html>
+<html>
+<head>
+    <title>My Blog</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f9f9f9;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background: #4361ee;
+            color: white;
+            padding: 40px 0;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        article {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>My Awesome Blog</h1>
+        <p>Thoughts, ideas, and experiences</p>
+    </header>
+    
+    <div class="container">
+        <article>
+            <h2>My First Blog Post</h2>
+            <p>This is the content of my first blog post. I'm excited to share my thoughts with you!</p>
+            <p>Blogging is a great way to express yourself and share knowledge with others.</p>
+        </article>
+    </div>
+</body>
+</html>`;
+                        break;
+                    case 'card':
+                        templateHTML = `<!DOCTYPE html>
+<html>
+<head>
+    <title>Card Layout</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f2f5;
+        }
+        .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            width: 300px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card-img {
+            height: 180px;
+            background: linear-gradient(120deg, #4361ee 0%, #3a0ca3 100%);
+        }
+        .card-content {
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card-container">
+        <div class="card">
+            <div class="card-img"></div>
+            <div class="card-content">
+                <h3>Card Title</h3>
+                <p>This is a sample card with some content. You can customize it as needed.</p>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-img"></div>
+            <div class="card-content">
+                <h3>Another Card</h3>
+                <p>Card layouts are great for showcasing products, services, or features.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>`;
+                        break;
+                    case 'form':
+                        templateHTML = `<!DOCTYPE html>
+<html>
+<head>
+    <title>Form Example</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f7fa;
+            color: #333;
+        }
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: inherit;
+        }
+        button {
+            background: #4361ee;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Contact Us</h2>
+        <form>
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" placeholder="Your name">
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="Your email">
+            </div>
+            
+            <div class="form-group">
+                <label for="message">Message</label>
+                <textarea id="message" rows="5" placeholder="Your message"></textarea>
+            </div>
+            
+            <button type="submit">Send Message</button>
+        </form>
+    </div>
+</body>
+</html>`;
+                        break;
+                }
+                
+                codeEditor.value = templateHTML;
+                updatePreview();
+                updateStats();
+            }
+            
+            // Change theme function
+            function changeTheme(themeName) {
+                const root = document.documentElement;
+                
+                switch(themeName) {
+                    case 'default':
+                        root.style.setProperty('--primary', '#4361ee');
+                        root.style.setProperty('--secondary', '#3a0ca3');
+                        root.style.setProperty('--accent', '#f72585');
+                        break;
+                    case 'dark':
+                        root.style.setProperty('--primary', '#6c757d');
+                        root.style.setProperty('--secondary', '#495057');
+                        root.style.setProperty('--accent', '#ff6b6b');
+                        break;
+                    case 'light':
+                        root.style.setProperty('--primary', '#4dabf7');
+                        root.style.setProperty('--secondary', '#339af0');
+                        root.style.setProperty('--accent', '#ff922b');
+                        break;
+                    case 'green':
+                        root.style.setProperty('--primary', '#40c057');
+                        root.style.setProperty('--secondary', '#2f9e44');
+                        root.style.setProperty('--accent', '#fab005');
+                        break;
+                    case 'sunset':
+                        root.style.setProperty('--primary', '#ff6b6b');
+                        root.style.setProperty('--secondary', '#f06595');
+                        root.style.setProperty('--accent', '#cc5de8');
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
